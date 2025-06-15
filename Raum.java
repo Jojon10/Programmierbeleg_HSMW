@@ -4,16 +4,25 @@ public class Raum extends Bereich {
 
     @Override
     public boolean isErlaubteEingabe(String input) {
-        return input.equals("w") || input.equals("s") || input.equals("1") || input.equals("2");
+        return model.istImKampf() ? input.equals("1") || input.equals("2") :
+               input.equals("w") || input.equals("s") || input.equals("1") || input.equals("2");
     }
 
     @Override
     public String getErlaubteEingaben() {
-        return "w - vorwärts, s - zurück, 1 - Truhe öffnen, 2 - Händler";
+        return gegner != null ? "1 - Angriff, 2 - Blocken" : "w - vorwärts, s - zurück, 1 - Truhe öffnen, 2 - Händler";
     }
 
     @Override
     public void handleInput(String input, Game model, GameView view) {
+        if (model.istImKampf()) {
+            kampfInput(input, model, view);
+            return;
+        }
+        if (gegner != null) {
+            starteKampf(model, view);
+            return;
+        }
         switch (input) {
             case "1":
                 if (!truheGeoeffnet) {

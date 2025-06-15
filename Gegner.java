@@ -22,4 +22,5 @@ public class Gegner {
     public int getDmg() { return dmg; }
     public double getAtk() { return atk; }
     public double getDef() { return def; }
+    public void setHp(int hp) { this.hp = hp; }
 }
