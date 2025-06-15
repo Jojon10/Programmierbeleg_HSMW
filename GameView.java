@@ -1,46 +1,66 @@
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.text.Font;
 
 public class GameView {
     private VBox root;
-    private Label verlaufLabel;
+    private TextArea verlaufArea;
+    private Label allowedInputsLabel;
+    private Label statusLabel;
     private Label visualLabel;
-    private Label optionenLabel;
     private TextField inputField;
     private GameController controller;
 
     public GameView() {
-        verlaufLabel = new Label("Willkommen im Dungeon!");
-        visualLabel = new Label("Visualisierung folgt.");
-        optionenLabel = new Label("");
+        root = new VBox(10);
+        root.setPadding(new Insets(10));
+
+        verlaufArea = new TextArea();
+        verlaufArea.setEditable(false);
+        verlaufArea.setPrefHeight(300);
+        verlaufArea.setFont(Font.font("Monospaced", 14));
+
+        allowedInputsLabel = new Label("Erlaubte Eingaben:");
+        statusLabel = new Label("Status:");
+        visualLabel = new Label("Visualisierung:");
+
         inputField = new TextField();
-
-        HBox labels = new HBox(10, verlaufLabel, visualLabel);
-        root = new VBox(10, labels, optionenLabel, inputField);
-
+        inputField.setPromptText("Gib Befehl ein und Enter drücken");
         inputField.setOnAction(e -> {
             if (controller != null) {
-                controller.handleInput(inputField.getText());
-                inputField.clear();
+                String input = inputField.getText().trim();
+                if (!input.isEmpty()) {
+                    controller.processInput(input);
+                    inputField.clear();
+                }
             }
         });
-    }
 
-    public VBox getRoot() { return root; }
+        root.getChildren().addAll(verlaufArea, allowedInputsLabel, statusLabel, visualLabel, inputField);
+    }
 
     public void setController(GameController controller) {
         this.controller = controller;
     }
 
+    public VBox getRoot() {
+        return root;
+    }
+
     public void updateVerlauf(String text) {
-        verlaufLabel.setText(text);
+        verlaufArea.appendText(text + "\n");
     }
 
-    public void updateVisual(String text) {
-        visualLabel.setText(text);
+    public void updateAllowedInputs(String inputs) {
+        allowedInputsLabel.setText("Erlaubte Eingaben: " + inputs);
     }
 
-    public void updateOptionen(String text) {
-        optionenLabel.setText("Mögliche Eingaben: " + text);
+    public void updateStatus(String status) {
+        statusLabel.setText("Status: " + status);
+    }
+
+    public void updateVisual(String visual) {
+        visualLabel.setText("Visualisierung: " + visual);
     }
 }

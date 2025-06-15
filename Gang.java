@@ -1,24 +1,27 @@
 public class Gang extends Bereich {
     @Override
     public boolean isErlaubteEingabe(String input) {
-        return gegner != null ? input.equals("1") || input.equals("2") : input.equals("w") || input.equals("s");
+        return nachbarn.containsKey(input);
     }
 
     @Override
     public String getErlaubteEingaben() {
-        return gegner != null ? "1 - Angriff, 2 - Blocken" : "w - vorwärts, s - rückwärts";
+        return String.join(", ", nachbarn.keySet());
     }
 
     @Override
     public void handleInput(String input, Game model, GameView view) {
-        if (model.istImKampf()) {
-            kampfInput(input, model, view);
-            return;
-        }
         if (gegner != null) {
-            starteKampf(model, view);
+            view.updateVerlauf("Ein Kampf beginnt mit: " + gegner.getName());
             return;
         }
-        view.updateVerlauf("Du gehst " + (input.equals("w") ? "den Gang weiter" : "zurück") + ".");
+
+        Bereich ziel = nachbarn.get(input);
+        if (ziel != null) {
+            model.setAktuellerBereich(ziel);
+            view.updateVerlauf("Du gehst " + input + ".");
+        } else {
+            view.updateVerlauf("Ungültige Richtung.");
+        }
     }
 }

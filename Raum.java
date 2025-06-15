@@ -1,28 +1,48 @@
 public class Raum extends Bereich {
     private boolean truheGeoeffnet = false;
     private boolean haendlerBesucht = false;
+    private boolean mitBett;
+    private boolean hatLeiter = false;
+
+    public Raum(boolean mitBett) {
+        this.mitBett = mitBett;
+    }
+
+    public void setLeiter(boolean wert) {
+        this.hatLeiter = wert;
+    }
 
     @Override
     public boolean isErlaubteEingabe(String input) {
-        return model.istImKampf() ? input.equals("1") || input.equals("2") :
-               input.equals("w") || input.equals("s") || input.equals("1") || input.equals("2");
+        // Richtungen + Truhe(1) + Händler(2)
+        return nachbarn.containsKey(input) || input.equals("1") || input.equals("2");
     }
 
     @Override
     public String getErlaubteEingaben() {
-        return gegner != null ? "1 - Angriff, 2 - Blocken" : "w - vorwärts, s - zurück, 1 - Truhe öffnen, 2 - Händler";
+        StringBuilder sb = new StringBuilder();
+        for (String richtung : nachbarn.keySet()) {
+            sb.append(richtung).append(", ");
+        }
+        if (!truheGeoeffnet) sb.append("1, ");
+        if (!haendlerBesucht) sb.append("2, ");
+        if (sb.length() > 2) sb.setLength(sb.length() - 2); // letztes Komma entfernen
+        return sb.toString();
     }
 
     @Override
     public void handleInput(String input, Game model, GameView view) {
-        if (model.istImKampf()) {
-            kampfInput(input, model, view);
-            return;
-        }
         if (gegner != null) {
-            starteKampf(model, view);
+            view.updateVerlauf("Ein Kampf beginnt mit: " + gegner.getName());
             return;
         }
+
+        if (hatLeiter) {
+            view.updateVerlauf("Du findest eine Leiter zur nächsten Ebene!");
+            model.naechsteEbene();
+            return;
+        }
+
         switch (input) {
             case "1":
                 if (!truheGeoeffnet) {
@@ -40,9 +60,14 @@ public class Raum extends Bereich {
                     view.updateVerlauf("Der Händler ist weitergezogen.");
                 }
                 break;
-            case "w":
-            case "s":
-                view.updateVerlauf("Du gehst " + (input.equals("w") ? "vorwärts" : "zurück") + ".");
+            default:
+                Bereich ziel = nachbarn.get(input);
+                if (ziel != null) {
+                    model.setAktuellerBereich(ziel);
+                    view.updateVerlauf("Du gehst " + input + ".");
+                } else {
+                    view.updateVerlauf("Ungültige Richtung.");
+                }
                 break;
         }
     }
