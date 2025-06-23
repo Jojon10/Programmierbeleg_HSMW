@@ -12,8 +12,8 @@ public class Game {
         this.aktuelleEbeneIndex = 0;
 
         // Beispiel: 2 Ebenen anlegen
-        ebenen.add(new Ebene());
-        ebenen.add(new Ebene());
+        ebenen.add(new Ebene(1));
+        ebenen.add(new Ebene(2));
 
         this.aktuellerBereich = ebenen.get(0).getStartBereich();
     }
