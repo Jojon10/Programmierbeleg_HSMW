@@ -1,9 +1,9 @@
 public class Gegner {
-    private String name;
+    private final String name;
     private int hp;
-    private double atk;
-    private double def;
-    private int dmg;
+    private final double atk;
+    private final double def;
+    private final int dmg;
 
     public Gegner(String name, int hp, int dmg, double atk, double def) {
         this.name = name;

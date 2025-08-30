@@ -1,6 +1,6 @@
 public class Armor extends Item {
-    private int hp;
-    private double def;
+    private final int hp;
+    private final double def;
 
     public Armor(String name, int hp, double def) {
         super(name);

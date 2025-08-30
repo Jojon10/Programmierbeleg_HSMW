@@ -1,6 +1,6 @@
 public class GameController {
-    private Game model;
-    private GameView view;
+    private final Game model;
+    private final GameView view;
     private Battle battle;
     private boolean imKampf = false;
 
@@ -12,66 +12,101 @@ public class GameController {
     }
 
     public void processInput(String input) {
+        if (input == null) return;
+        input = input.trim().toLowerCase();
+        if (input.isEmpty()) return;
+
         if (imKampf) {
+            // Nur Kampfaktionen zulassen
             if (!input.equals("1") && !input.equals("2")) {
-                view.updateAllowedInputs("Nur 1 (Angriff) oder 2 (Blocken) erlaubt!");
-                return;
-            }
-            int aktion = Integer.parseInt(input);
-            String ergebnis = battle.spielerZug(aktion);
-            view.updateVerlauf(ergebnis);
-            if (battle.istKampfVorbei()) {
-                imKampf = false;
-                if (model.getPlayer().getHp() <= 0) {
-                    view.updateVerlauf("Game Over! Du wurdest besiegt.");
-                } else {
-                    view.updateVerlauf("Kampf beendet. Du hast gewonnen!");
-                    model.getAktuellerBereich().setGegner(null);
-                }
+                view.updateVerlauf("Im Kampf sind nur die Aktionen 1 (Angriff) und 2 (Block) erlaubt.");
                 updateAllowedInputs();
-            } else {
-                view.updateAllowedInputs(battle.getAllowedActions());
-            }
-            updateView();
-        } else {
-            Bereich aktuellerBereich = model.getAktuellerBereich();
-
-            if (!aktuellerBereich.isErlaubteEingabe(input)) {
-                view.updateVerlauf("Ungültige Eingabe. Erlaubt: " + aktuellerBereich.getErlaubteEingaben());
                 return;
             }
 
-            aktuellerBereich.handleInput(input, model, view);
+            String bericht = battle.processInput(input);
+            view.updateVerlauf(bericht);
 
-            Gegner gegner = model.getAktuellerBereich().getGegner();
-            if (gegner != null) {
-                startKampf(gegner);
+            if (battle.istKampfVorbei()) {
+                if (model.getPlayer().getHp() <= 0) {
+                    view.updateVerlauf("Du bist ohnmächtig geworden und erwachst wieder am Bett...");
+                    // Respawn am Bett der aktuellen Ebene
+                    model.getPlayer().setHp(100);
+                    model.setAktuellerBereich(model.getAktuelleEbene().getStartBereich());
+                } else {
+                    view.updateVerlauf("Du hast " + battle.getGegnerName() + " besiegt!");
+                    // Gegner aus dem Bereich entfernen
+                    if (model.getAktuellerBereich() != null) {
+                        model.getAktuellerBereich().setGegner(null);
+                    }
+                }
+                imKampf = false;
             }
 
             updateAllowedInputs();
             updateView();
+            return;
         }
+
+        // Nicht im Kampf: Eingabe an aktuellen Bereich delegieren
+        Bereich bereich = model.getAktuellerBereich();
+        if (bereich == null) {
+            view.updateVerlauf("Es gibt keinen aktuellen Bereich.");
+            return;
+        }
+
+        if (!bereich.isErlaubteEingabe(input)) {
+            view.updateVerlauf("Ungültige Eingabe.");
+            updateAllowedInputs();
+            return;
+        }
+
+        bereich.handleInput(input, model, view);
+
+        // Prüfen, ob an/ im neuen Bereich ein Gegner wartet → Kampf starten
+        Bereich aktueller = model.getAktuellerBereich();
+        if (aktueller != null && aktueller.getGegner() != null) {
+            battle = new Battle(model.getPlayer(), aktueller.getGegner());
+            imKampf = true;
+            view.updateVerlauf("Ein Kampf beginnt mit: " + aktueller.getGegner().getName());
+        }
+
+        updateAllowedInputs();
+        updateView();
     }
 
-    private void startKampf(Gegner gegner) {
-        imKampf = true;
-        battle = new Battle(model.getPlayer(), gegner);
-        view.updateVerlauf("Kampf beginnt gegen " + gegner.getName() + "!");
-        view.updateAllowedInputs(battle.getAllowedActions());
-    }
-
-    private void updateAllowedInputs() {
+    public void updateAllowedInputs() {
         if (imKampf) {
             view.updateAllowedInputs(battle.getAllowedActions());
         } else {
-            view.updateAllowedInputs(model.getAktuellerBereich().getErlaubteEingaben());
+            Bereich b = model.getAktuellerBereich();
+            view.updateAllowedInputs(b != null ? b.getErlaubteEingaben() : "—");
         }
     }
 
     private void updateView() {
-        String status = "HP: " + model.getPlayer().getHp();
+        Player p = model.getPlayer();
+        String status = "HP=" + p.getHp() + " | ATK×" + String.format("%.2f", p.getAtk()) +
+                        " | DEF×" + String.format("%.2f", p.getDef()) + " | DMG=" + p.getDmg();
         view.updateStatus(status);
 
-        view.updateVisual("Du bist in einem Bereich.");
+        Bereich b = model.getAktuellerBereich();
+        if (b == null) {
+            view.updateVisual("Kein Bereich.");
+            return;
+        }
+        String typ = (b instanceof Raum) ? "Raum" : "Gang";
+        String extras = "";
+        if (b instanceof Raum) {
+            Raum r = (Raum) b;
+            extras = (r.hatBett() ? " | Bett" : "") +
+                     (r.hatLeiter() ? " | Leiter" : "") +
+                     (r.hatTruhe() ? " | Truhe" : "") +
+                     (r.hatHaendler() ? " | Händler" : "");
+        }
+        if (b.getGegner() != null) {
+            extras += " | Gegner: " + b.getGegner().getName();
+        }
+        view.updateVisual(typ + extras);
     }
 }

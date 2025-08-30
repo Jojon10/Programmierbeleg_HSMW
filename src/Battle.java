@@ -1,12 +1,11 @@
 import java.util.Random;
 
 public class Battle {
-    private Player player;
-    private Gegner gegner;
+    private final Player player;
+    private final Gegner gegner;
     private boolean spielerBlockt = false;
     private boolean gegnerBlockt = false;
-    private boolean spielerAmZug = true;
-    private Random random = new Random();
+    private final Random random = new Random();
 
     public Battle(Player player, Gegner gegner) {
         this.player = player;
@@ -14,67 +13,60 @@ public class Battle {
     }
 
     public String getAllowedActions() {
-        return "1 (Angriff), 2 (Blocken)";
+        return "1: Angriff, 2: Block";
     }
 
-    public String spielerZug(int aktion) {
+    public String getGegnerName() {
+        return gegner.getName();
+    }
+
+    public String processInput(String input) {
         StringBuilder sb = new StringBuilder();
-        if (!spielerAmZug) {
-            return "Es ist nicht dein Zug!";
+        // Spieleraktion
+        if ("1".equals(input)) {
+            spielerBlockt = false;
+            int dmg = calcDamage(player.getDmg(), player.getAtk(), gegner.getDef(), gegnerBlockt);
+            gegner.setHp(gegner.getHp() - dmg);
+            sb.append("Du greifst an und verursachst ").append(dmg).append(" Schaden. ");
+        } else if ("2".equals(input)) {
+            spielerBlockt = true;
+            sb.append("Du gehst in Deckung (Block). ");
+        } else {
+            sb.append("Unbekannte Aktion. ");
         }
 
-        if (aktion == 1) { // Angriff
-            if (gegnerBlockt) {
-                int schaden = (int)((player.getDmg() * player.getAtk()) / (gegner.getDef() * 2));
-                gegner.setHp(gegner.getHp() - schaden);
-                sb.append("Du greifst an, aber der Gegner blockt! Schaden: ").append(schaden).append("\n");
+        // Gegnerzug (falls er noch lebt)
+        if (gegner.getHp() > 0) {
+            boolean enemyBlocks = random.nextDouble() < 0.35;
+            gegnerBlockt = enemyBlocks;
+            if (enemyBlocks) {
+                sb.append(gegner.getName()).append(" blockt. ");
             } else {
-                int schaden = (int)(player.getDmg() * player.getAtk() / gegner.getDef());
-                gegner.setHp(gegner.getHp() - schaden);
-                sb.append("Du greifst an und verursachst ").append(schaden).append(" Schaden.\n");
+                int edmg = calcDamage(gegner.getDmg(), gegner.getAtk(), player.getDef(), spielerBlockt);
+                player.setHp(player.getHp() - edmg);
+                sb.append(gegner.getName()).append(" greift an und verursacht ").append(edmg).append(" Schaden. ");
             }
-            spielerBlockt = false;
-        } else if (aktion == 2) { // Blocken
-            spielerBlockt = true;
-            sb.append("Du bereitest dich auf den nächsten Angriff vor (Block).\n");
-        } else {
-            sb.append("Ungültige Aktion.\n");
-            return sb.toString();
         }
 
         if (gegner.getHp() <= 0) {
-            sb.append("Du hast den Gegner besiegt!");
-            return sb.toString();
+            sb.append("Der Gegner ist besiegt!");
         }
-
-        // Gegnerzug
-        int gegnerAktion = random.nextInt(2) + 1; // 1=Angriff, 2=Blocken
-        if (gegnerAktion == 1) {
-            if (spielerBlockt) {
-                int schaden = (int)((gegner.getDmg() * gegner.getAtk()) / (player.getDef() * 2));
-                player.setHp(player.getHp() - schaden);
-                sb.append("Der Gegner greift an, du blockst! Schaden: ").append(schaden).append("\n");
-            } else {
-                int schaden = (int)(gegner.getDmg() * gegner.getAtk() / player.getDef());
-                player.setHp(player.getHp() - schaden);
-                sb.append("Der Gegner greift an und verursacht ").append(schaden).append(" Schaden.\n");
-            }
-            gegnerBlockt = false;
-        } else {
-            gegnerBlockt = true;
-            sb.append("Der Gegner bereitet sich auf den nächsten Angriff vor (Block).\n");
-        }
-
         if (player.getHp() <= 0) {
             sb.append("Du wurdest besiegt!");
         }
 
-        spielerAmZug = true; // Immer Spieler am Zug in diesem Modell
-
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     public boolean istKampfVorbei() {
         return player.getHp() <= 0 || gegner.getHp() <= 0;
+    }
+
+    private int calcDamage(int baseDmg, double atk, double def, boolean defenderBlocks) {
+        double mult = atk / Math.max(0.1, def);
+        double val = baseDmg * mult;
+        if (defenderBlocks) val *= 0.5;
+        int dmg = (int)Math.round(val);
+        return Math.max(1, dmg);
     }
 }

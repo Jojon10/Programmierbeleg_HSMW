@@ -15,19 +15,24 @@ public class Game {
         ebenen.add(new Ebene(1));
         ebenen.add(new Ebene(2));
 
-        this.aktuellerBereich = ebenen.get(0).getStartBereich();
+        // Startbereich der ersten Ebene setzen
+        this.aktuellerBereich = ebenen.get(aktuelleEbeneIndex).getStartBereich();
     }
 
     public Player getPlayer() { return player; }
     public Bereich getAktuellerBereich() { return aktuellerBereich; }
     public void setAktuellerBereich(Bereich bereich) { this.aktuellerBereich = bereich; }
+    public Ebene getAktuelleEbene() { return ebenen.get(aktuelleEbeneIndex); }
 
     public void naechsteEbene() {
         aktuelleEbeneIndex++;
         if (aktuelleEbeneIndex < ebenen.size()) {
             aktuellerBereich = ebenen.get(aktuelleEbeneIndex).getStartBereich();
         } else {
-            // Ende oder neue Ebene generieren
+            // Wenn mehr Ebenen benötigt werden, dynamisch erzeugen
+            Ebene neue = new Ebene(aktuelleEbeneIndex + 1);
+            ebenen.add(neue);
+            aktuellerBereich = neue.getStartBereich();
         }
     }
 }

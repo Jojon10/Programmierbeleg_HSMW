@@ -4,52 +4,48 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 
 public class GameView {
-    private VBox root;
-    private TextArea verlaufArea;
-    private Label allowedInputsLabel;
-    private Label statusLabel;
-    private Label visualLabel;
-    private TextField inputField;
+    private final VBox root;
+    private final TextArea verlaufArea;
+    private final Label allowedInputsLabel;
+    private final Label statusLabel;
+    private final Label visualLabel;
+    private final TextField inputField;
     private GameController controller;
 
     public GameView() {
         root = new VBox(10);
-        root.setPadding(new Insets(10));
+        root.setPadding(new Insets(12));
+
+        Label title = new Label("Dungeon RPG");
+        title.setFont(new Font(20));
+
+        statusLabel = new Label("Status: —");
+        visualLabel = new Label("Visualisierung: —");
+        allowedInputsLabel = new Label("Erlaubte Eingaben: —");
 
         verlaufArea = new TextArea();
         verlaufArea.setEditable(false);
-        verlaufArea.setPrefHeight(300);
-        verlaufArea.setFont(Font.font("Monospaced", 14));
-
-        allowedInputsLabel = new Label("Erlaubte Eingaben:");
-        statusLabel = new Label("Status:");
-        visualLabel = new Label("Visualisierung:");
+        verlaufArea.setPrefRowCount(15);
 
         inputField = new TextField();
-        inputField.setPromptText("Gib Befehl ein und Enter drücken");
+        inputField.setPromptText("Eingabe hier (z.B. w/a/s/d, 1=Truhe, 2=Händler, e=Bett, x=Leiter).");
         inputField.setOnAction(e -> {
-            if (controller != null) {
-                String input = inputField.getText().trim();
-                if (!input.isEmpty()) {
-                    controller.processInput(input);
-                    inputField.clear();
-                }
+            String text = inputField.getText();
+            if (controller != null && text != null && !text.isBlank()) {
+                controller.processInput(text);
             }
+            inputField.clear();
         });
 
-        root.getChildren().addAll(verlaufArea, allowedInputsLabel, statusLabel, visualLabel, inputField);
+        root.getChildren().addAll(title, statusLabel, visualLabel, allowedInputsLabel, verlaufArea, inputField);
     }
 
     public void setController(GameController controller) {
         this.controller = controller;
     }
 
-    public VBox getRoot() {
+    public Pane getRoot() {
         return root;
-    }
-
-    public void updateVerlauf(String text) {
-        verlaufArea.appendText(text + "\n");
     }
 
     public void updateAllowedInputs(String inputs) {
@@ -62,5 +58,14 @@ public class GameView {
 
     public void updateVisual(String visual) {
         visualLabel.setText("Visualisierung: " + visual);
+    }
+
+    public void updateVerlauf(String text) {
+        if (text == null) return;
+        if (!verlaufArea.getText().isEmpty()) {
+            verlaufArea.appendText("\n");
+        }
+        verlaufArea.appendText(text);
+        verlaufArea.setScrollTop(Double.MAX_VALUE);
     }
 }
