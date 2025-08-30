@@ -30,14 +30,14 @@ public class GameController {
             if (battle.istKampfVorbei()) {
                 if (model.getPlayer().getHp() <= 0) {
                     // Tod zählen & Respawn am Bett
-                    model.getPlayer().incrementDeaths();
+                    model.getPlayer().erhoeheTode();
                     view.updateVerlauf("Du bist ohnmächtig geworden und erwachst wieder am Bett...");
                     model.getPlayer().setHp(model.getPlayer().getMaxHp()); // Bett heilt auf Max HP
                     model.setAktuellerBereich(model.getAktuelleEbene().getStartBereich());
                 } else {
-                    int reward = battle.getCoinReward();
-                    model.getPlayer().addCoins(reward);
-                    view.updateVerlauf("Du hast " + battle.getGegnerName() + " besiegt und erhältst " + reward + " Münze(n).");
+                    int belohnung = battle.getMuenzenBelohnung();
+                    model.getPlayer().addMuenzen(belohnung);
+                    view.updateVerlauf("Du hast " + battle.getGegnerName() + " besiegt und erhältst " + belohnung + " Münze(n).");
                     // Gegner aus dem Bereich entfernen
                     if (model.getAktuellerBereich() != null) {
                         model.getAktuellerBereich().setGegner(null);
@@ -66,7 +66,7 @@ public class GameController {
 
         bereich.handleInput(input, model, view);
 
-        // Prüfen, ob an/ im neuen Bereich ein Gegner wartet → Kampf starten
+        // Prüfen, ob am/im neuen Bereich ein Gegner wartet → Kampf starten
         Bereich aktueller = model.getAktuellerBereich();
         if (aktueller != null && aktueller.getGegner() != null) {
             battle = new Battle(model.getPlayer(), aktueller.getGegner());
@@ -80,7 +80,7 @@ public class GameController {
 
     public void updateAllowedInputs() {
         if (imKampf) {
-            view.updateAllowedInputs(battle.getAllowedActions());
+            view.updateAllowedInputs(battle.getErlaubteAktionen());
         } else {
             Bereich b = model.getAktuellerBereich();
             view.updateAllowedInputs(b != null ? b.getErlaubteEingaben() : "—");
@@ -89,12 +89,12 @@ public class GameController {
 
     private void updateView() {
         Player p = model.getPlayer();
-        String status = "HP=" + p.getHp() + "/" + p.getMaxHp() +
-                        " | ATK=" + String.format("%.2f", p.getAtk()) +
-                        " | DEF=" + String.format("%.2f", p.getDef()) +
-                        " | DMG=" + p.getDmg() +
-                        " | Coins=" + p.getCoins() +
-                        " | Tode=" + p.getDeaths();
+        String status = "HP=" + p.getHp() + "/" + p.getMaxHp()
+                + " | ATK×" + String.format("%.2f", p.getAtk())
+                + " | DEF×" + String.format("%.2f", p.getDef())
+                + " | DMG=" + p.getDmg()
+                + " | Münzen=" + p.getMuenzen()
+                + " | Tode=" + p.getTode();
         view.updateStatus(status);
 
         Bereich b = model.getAktuellerBereich();
@@ -107,14 +107,14 @@ public class GameController {
         String extras = "";
         if (b instanceof Raum) {
             Raum r = (Raum) b;
-            extras = (r.hatBett() ? " | Bett" : "") +
-                     (r.hatLeiter() ? " | Leiter" : "") +
-                     (r.hatTruhe() ? " | Truhe" : "") +
-                     (r.hatHaendler() ? " | Händler" : "");
+            extras = (r.hatBett() ? " | Bett" : "")
+                    + (r.hatLeiter() ? " | Leiter" : "")
+                    + (r.hatTruhe() ? " | Truhe" : "")
+                    + (r.hatHaendler() ? " | Händler" : "");
         }
 
         if (b.getGegner() != null) {
-            // NEU: während des Kampfes die HP des Gegners anzeigen
+            // Während des Kampfes die HP des Gegners anzeigen
             if (imKampf) {
                 extras += " | Gegner: " + b.getGegner().getName() + " (HP=" + b.getGegner().getHp() + ")";
             } else {

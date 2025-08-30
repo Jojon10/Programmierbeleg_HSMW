@@ -11,7 +11,6 @@ public class Main extends Application {
         view = new GameView();
         Game model = new Game();
         controller = new GameController(model, view);
-
         view.setController(controller);
 
         Scene scene = new Scene(view.getRoot(), 800, 600);

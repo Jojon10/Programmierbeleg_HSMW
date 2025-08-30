@@ -8,13 +8,18 @@ public class Weapon extends Item {
         this.atk = atk;
     }
 
-    public int getDmg() { return dmg; }
-    public double getAtk() { return atk; }
+    public int getDmg() {
+        return dmg;
+    }
+
+    public double getAtk() {
+        return atk;
+    }
 
     @Override
     public String applyTo(Player player) {
         player.setDmg(dmg);
         player.setAtk(atk);
-        return "Waffe angelegt: " + name + " (DMG=" + dmg + ", ATK×" + String.format("%.2f", atk) + ")";
+        return "Waffe angelegt: " + name + " (DMG=" + dmg + ", ATK=" + String.format("%.2f", atk) + ")";
     }
 }

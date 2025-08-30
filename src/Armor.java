@@ -8,12 +8,17 @@ public class Armor extends Item {
         this.def = def;
     }
 
-    public int getMaxHp() { return maxHp; }
-    public double getDef() { return def; }
+    public int getMaxHp() {
+        return maxHp;
+    }
+
+    public double getDef() {
+        return def;
+    }
 
     @Override
     public String applyTo(Player player) {
-        player.setMaxHp(maxHp);      // klemmt aktuelle HP automatisch ein
+        player.setMaxHp(maxHp);
         player.setDef(def);
         return "Rüstung angelegt: " + name + " (maxHP=" + maxHp + ", DEF×" + String.format("%.2f", def) + ")";
     }

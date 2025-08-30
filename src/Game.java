@@ -1,4 +1,5 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Game {
     private Player player;
@@ -19,17 +20,27 @@ public class Game {
         this.aktuellerBereich = ebenen.get(aktuelleEbeneIndex).getStartBereich();
     }
 
-    public Player getPlayer() { return player; }
-    public Bereich getAktuellerBereich() { return aktuellerBereich; }
-    public void setAktuellerBereich(Bereich bereich) { this.aktuellerBereich = bereich; }
-    public Ebene getAktuelleEbene() { return ebenen.get(aktuelleEbeneIndex); }
+    public Player getPlayer() {
+        return player;
+    }
+
+    public Bereich getAktuellerBereich() {
+        return aktuellerBereich;
+    }
+
+    public void setAktuellerBereich(Bereich bereich) {
+        this.aktuellerBereich = bereich;
+    }
+
+    public Ebene getAktuelleEbene() {
+        return ebenen.get(aktuelleEbeneIndex);
+    }
 
     public void naechsteEbene() {
         aktuelleEbeneIndex++;
         if (aktuelleEbeneIndex < ebenen.size()) {
             aktuellerBereich = ebenen.get(aktuelleEbeneIndex).getStartBereich();
         } else {
-            // Wenn mehr Ebenen benötigt werden, dynamisch erzeugen
             Ebene neue = new Ebene(aktuelleEbeneIndex + 1);
             ebenen.add(neue);
             aktuellerBereich = neue.getStartBereich();

@@ -12,7 +12,7 @@ public class Battle {
         this.gegner = gegner;
     }
 
-    public String getAllowedActions() {
+    public String getErlaubteAktionen() {
         return "1: Angriff, 2: Block";
     }
 
@@ -20,16 +20,17 @@ public class Battle {
         return gegner.getName();
     }
 
-    public int getCoinReward() {
-        return gegner.getCoinsReward();
+    public int getMuenzenBelohnung() {
+        return gegner.getMuenzenBelohnung();
     }
 
     public String processInput(String input) {
         StringBuilder sb = new StringBuilder();
+
         // Spieleraktion
         if ("1".equals(input)) {
             spielerBlockt = false;
-            int dmg = calcDamage(player.getDmg(), player.getAtk(), gegner.getDef(), gegnerBlockt);
+            int dmg = berechneSchaden(player.getDmg(), player.getAtk(), gegner.getDef(), gegnerBlockt);
             gegner.setHp(gegner.getHp() - dmg);
             sb.append("Du greifst an und verursachst ").append(dmg).append(" Schaden. ");
         } else if ("2".equals(input)) {
@@ -46,7 +47,7 @@ public class Battle {
             if (enemyBlocks) {
                 sb.append(gegner.getName()).append(" blockt. ");
             } else {
-                int edmg = calcDamage(gegner.getDmg(), gegner.getAtk(), player.getDef(), spielerBlockt);
+                int edmg = berechneSchaden(gegner.getDmg(), gegner.getAtk(), player.getDef(), spielerBlockt);
                 player.setHp(player.getHp() - edmg);
                 sb.append(gegner.getName()).append(" greift an und verursacht ").append(edmg).append(" Schaden. ");
             }
@@ -66,11 +67,13 @@ public class Battle {
         return player.getHp() <= 0 || gegner.getHp() <= 0;
     }
 
-    private int calcDamage(int baseDmg, double atk, double def, boolean defenderBlocks) {
-        double mult = atk / Math.max(0.1, def);
-        double val = baseDmg * mult;
-        if (defenderBlocks) val *= 0.5;
-        int dmg = (int)Math.round(val);
+    private int berechneSchaden(int basisSchaden, double ang, double ver, boolean verteidigerBlockt) {
+        double mult = ang / Math.max(0.1, ver);
+        double val = basisSchaden * mult;
+        if (verteidigerBlockt) {
+            val *= 0.5;
+        }
+        int dmg = (int) Math.round(val);
         return Math.max(1, dmg);
     }
 }

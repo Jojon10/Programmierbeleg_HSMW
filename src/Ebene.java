@@ -1,4 +1,5 @@
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Ebene {
     private final Map<String, Bereich> bereiche = new HashMap<>();
@@ -13,7 +14,7 @@ public class Ebene {
                 setupEbene2();
                 break;
             default:
-                setupEbene1(); // Fallback
+                setupEbene1(); // Fallback: einfache Ebene
         }
     }
 
@@ -25,17 +26,16 @@ public class Ebene {
         Gang gang1 = new Gang();
         gang1.setGegner(new Gegner("Ratte", 30, 6, 1.0, 1.0, 3));
 
-        // Ziel-Raum mit Händler und fest definierter Truhe
+        // Ziel-Raum mit Truhe, Händler und Leiter zur nächsten Ebene
         Raum raumB = new Raum(false);
         raumB.setHaendler(true);
-        // ← HIER bestimmst du den individuellen Truheninhalt dieses Raums:
         raumB.setTruheLoot(
-            new Weapon("Kurzschwert", 8, 1.20),
-            new Armor("Leder-Rüstung", 120, 1.15)
+                new Weapon("Kurzschwert", 8, 1.20),
+                new Armor("Leder-Rüstung", 120, 1.15)
         );
-        raumB.setLeiter(true); // Leiter zur nächsten Ebene
+        raumB.setLeiter(true);
 
-        // Verknüpfungen (rechts/links: d/a)
+        // Verknüpfungen (nur rechts/links: d/a)
         raumA.setNachbar("d", gang1);
         gang1.setNachbar("a", raumA);
 
@@ -55,13 +55,14 @@ public class Ebene {
         // Gang ohne Gegner
         Gang gang1 = new Gang();
 
-        // Ziel-Raum mit anderer Truhe (ANDERE Items!) und Händler
+        // Ziel-Raum mit anderer Truhe und Händler
         Raum raumB = new Raum(false);
         raumB.setHaendler(true);
         raumB.setTruheLoot(
-            new Armor("Kettenhemd", 140, 1.30) // andere Rüstung als in Ebene 1
+                new Armor("Kettenhemd", 140, 1.30)
         );
-        // Gegner in diesem Ziel-Raum (Belohnung: 5 Münzen)
+
+        // In der zweiten Ebene sitzt der Gegner im Ziel-Raum (Belohnung: 5 Münzen)
         raumB.setGegner(new Gegner("Kobold", 50, 8, 1.1, 1.1, 5));
 
         // Verknüpfungen

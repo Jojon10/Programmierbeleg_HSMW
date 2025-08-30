@@ -1,4 +1,5 @@
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class Bereich {
     protected Gegner gegner;
@@ -21,6 +22,8 @@ public abstract class Bereich {
     }
 
     public abstract boolean isErlaubteEingabe(String input);
+
     public abstract String getErlaubteEingaben();
+
     public abstract void handleInput(String input, Game model, GameView view);
 }

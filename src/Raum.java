@@ -7,10 +7,9 @@ public class Raum extends Bereich {
     private boolean haendlerBesucht = false;
     private final boolean mitBett;
     private boolean hatLeiter = false;
-
     private boolean hatHaendler = false;
 
-    // NEU: Vorab definierter Inhalt dieser einen Truhe in diesem Raum
+    // Inhalt der Truhe in diesem Raum
     private final List<Item> truhenLoot = new ArrayList<>();
 
     public Raum(boolean mitBett) {
@@ -18,7 +17,6 @@ public class Raum extends Bereich {
     }
 
     // ---- Truhen-API ----
-    /** Setzt den exakten Inhalt der Truhe (überschreibt vorherige Belegung). */
     public void setTruheLoot(Item... items) {
         truhenLoot.clear();
         if (items != null) {
@@ -27,7 +25,6 @@ public class Raum extends Bereich {
         truheGeoeffnet = false; // neu befüllt -> wieder verschlossen
     }
 
-    /** Fügt der Truhe ein weiteres Item hinzu. */
     public void addTruheItem(Item item) {
         if (item != null) {
             truhenLoot.add(item);
@@ -35,33 +32,43 @@ public class Raum extends Bereich {
         }
     }
 
-    /** Ob die Truhe benutzbar ist (hat Inhalt und ist noch nicht geöffnet). */
     public boolean hatTruhe() {
         return !truheGeoeffnet && !truhenLoot.isEmpty();
     }
 
-    // ---- Sonstige Raum-Optionen ----
+    // ---- Sonstige Optionen ----
     public void setLeiter(boolean wert) {
         this.hatLeiter = wert;
     }
 
-    public void setHaendler(boolean wert) { this.hatHaendler = wert; }
+    public void setHaendler(boolean wert) {
+        this.hatHaendler = wert;
+    }
 
-    public boolean hatBett() { return mitBett; }
-    public boolean hatLeiter() { return hatLeiter; }
-    public boolean hatHaendler() { return hatHaendler; }
+    public boolean hatBett() {
+        return mitBett;
+    }
+
+    public boolean hatLeiter() {
+        return hatLeiter;
+    }
+
+    public boolean hatHaendler() {
+        return hatHaendler;
+    }
 
     @Override
     public boolean isErlaubteEingabe(String input) {
         if (input == null) return false;
         input = input.trim().toLowerCase();
         if (nachbarn.containsKey(input)) return true;
+
         switch (input) {
             case "1": return hatTruhe();
             case "2": return hatHaendler; // mehrfach kaufen erlaubt (1 Münze pro Trank)
             case "e": return mitBett;
             case "x": return hatLeiter;
-            default: return false;
+            default:  return false;
         }
     }
 
@@ -108,7 +115,7 @@ public class Raum extends Bereich {
                         String info = it.applyTo(model.getPlayer());
                         sb.append("- ").append(info).append("\n");
                     }
-                    truheGeoeffnet = true;     // ab jetzt dauerhaft leer
+                    truheGeoeffnet = true; // ab jetzt dauerhaft leer
                     view.updateVerlauf(sb.toString().trim());
                 } else {
                     view.updateVerlauf("Hier gibt es keine nutzbare Truhe.");
@@ -118,11 +125,11 @@ public class Raum extends Bereich {
             case "2": // Händler (Trank 1 Münze, +30 HP bis maxHp)
                 if (hatHaendler) {
                     Player p = model.getPlayer();
-                    if (p.getCoins() >= 1) {
-                        p.addCoins(-1);
-                        p.setHp(p.getHp() + 30);
+                    if (p.getMuenzen() >= 1) {
+                        p.addMuenzen(-1);
+                        p.setHp(p.getHp() + 30); // wird in setHp auf maxHp begrenzt
                         haendlerBesucht = true;
-                        view.updateVerlauf("Du kaufst einen Trank für 1 Münze (+30 HP). Verbleibende Münzen: " + p.getCoins());
+                        view.updateVerlauf("Du kaufst einen Trank für 1 Münze (+30 HP). Verbleibende Münzen: " + p.getMuenzen());
                     } else {
                         view.updateVerlauf("Nicht genug Münzen. Ein Trank kostet 1 Münze.");
                     }
