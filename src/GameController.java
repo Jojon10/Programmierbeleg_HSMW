@@ -90,8 +90,8 @@ public class GameController {
     private void updateView() {
         Player p = model.getPlayer();
         String status = "HP=" + p.getHp() + "/" + p.getMaxHp()
-                + " | ATK×" + String.format("%.2f", p.getAtk())
-                + " | DEF×" + String.format("%.2f", p.getDef())
+                + " | ATK=" + String.format("%.2f", p.getAtk())
+                + " | DEF=" + String.format("%.2f", p.getDef())
                 + " | DMG=" + p.getDmg()
                 + " | Münzen=" + p.getMuenzen()
                 + " | Tode=" + p.getTode();
