@@ -29,12 +29,15 @@ public class GameController {
 
             if (battle.istKampfVorbei()) {
                 if (model.getPlayer().getHp() <= 0) {
+                    // Tod zählen & Respawn am Bett
+                    model.getPlayer().incrementDeaths();
                     view.updateVerlauf("Du bist ohnmächtig geworden und erwachst wieder am Bett...");
-                    // Respawn am Bett der aktuellen Ebene
-                    model.getPlayer().setHp(100);
+                    model.getPlayer().setHp(model.getPlayer().getMaxHp()); // Bett heilt auf Max HP
                     model.setAktuellerBereich(model.getAktuelleEbene().getStartBereich());
                 } else {
-                    view.updateVerlauf("Du hast " + battle.getGegnerName() + " besiegt!");
+                    int reward = battle.getCoinReward();
+                    model.getPlayer().addCoins(reward);
+                    view.updateVerlauf("Du hast " + battle.getGegnerName() + " besiegt und erhältst " + reward + " Münze(n).");
                     // Gegner aus dem Bereich entfernen
                     if (model.getAktuellerBereich() != null) {
                         model.getAktuellerBereich().setGegner(null);
@@ -86,8 +89,12 @@ public class GameController {
 
     private void updateView() {
         Player p = model.getPlayer();
-        String status = "HP=" + p.getHp() + " | ATK×" + String.format("%.2f", p.getAtk()) +
-                        " | DEF×" + String.format("%.2f", p.getDef()) + " | DMG=" + p.getDmg();
+        String status = "HP=" + p.getHp() + "/" + p.getMaxHp() +
+                        " | ATK=" + String.format("%.2f", p.getAtk()) +
+                        " | DEF=" + String.format("%.2f", p.getDef()) +
+                        " | DMG=" + p.getDmg() +
+                        " | Coins=" + p.getCoins() +
+                        " | Tode=" + p.getDeaths();
         view.updateStatus(status);
 
         Bereich b = model.getAktuellerBereich();

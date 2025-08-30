@@ -22,7 +22,7 @@ public class Ebene {
         Raum raumA = new Raum(true);
         // Gang mit Gegner
         Gang gang1 = new Gang();
-        gang1.setGegner(new Gegner("Ratte", 30, 6, 1.0, 1.0));
+        gang1.setGegner(new Gegner("Ratte", 30, 6, 1.0, 1.0, 3)); // 3 Münzen Belohnung
         // Ziel-Raum mit Truhe, Händler und Leiter zur nächsten Ebene
         Raum raumB = new Raum(false);
         raumB.setTruhe(true);
@@ -53,7 +53,7 @@ public class Ebene {
         raumB.setHaendler(true);
 
         // In der zweiten Ebene sitzt der Gegner im Ziel-Raum
-        raumB.setGegner(new Gegner("Kobold", 50, 8, 1.1, 1.1));
+        raumB.setGegner(new Gegner("Kobold", 50, 8, 1.1, 1.1, 5)); // 5 Münzen Belohnung
 
         // Verknüpfungen
         raumA.setNachbar("d", gang1);

@@ -33,7 +33,7 @@ public class Raum extends Bereich {
         if (nachbarn.containsKey(input)) return true;
         switch (input) {
             case "1": return hatTruhe && !truheGeoeffnet;
-            case "2": return hatHaendler && !haendlerBesucht;
+            case "2": return hatHaendler; // mehrfach kaufen erlaubt
             case "e": return mitBett;
             case "x": return hatLeiter;
             default: return false;
@@ -50,9 +50,9 @@ public class Raum extends Bereich {
             if (sb.length() > 0) sb.append(", ");
             sb.append("1 (Truhe)");
         }
-        if (hatHaendler && !haendlerBesucht) {
+        if (hatHaendler) {
             if (sb.length() > 0) sb.append(", ");
-            sb.append("2 (Händler)");
+            sb.append("2 (Händler: Trank 1 Münze)");
         }
         if (mitBett) {
             if (sb.length() > 0) sb.append(", ");
@@ -88,31 +88,37 @@ public class Raum extends Bereich {
                         view.updateVerlauf("Du öffnest die Truhe und findest eine Waffe: " + w.getName() +
                                 " (DMG=" + (int)w.getDmg() + ", ATK×" + String.format("%.2f", w.getAtk()) + ").");
                     } else {
-                        // Rüstung
+                        // Rüstung → setzt Max HP & DEF
                         Armor a = new Armor("Leder-Rüstung", 120, 1.20);
-                        model.getPlayer().setHp(Math.min(model.getPlayer().getHp(), a.getHp()));
+                        model.getPlayer().setMaxHp(a.getHp());
+                        // aktuelle HP einklemmen (geschieht in setMaxHp)
                         model.getPlayer().setDef(a.getDef());
                         view.updateVerlauf("Du öffnest die Truhe und findest eine Rüstung: " + a.getName() +
-                                " (HP=" + a.getHp() + ", DEF×" + String.format("%.2f", a.getDef()) + ").");
+                                " (maxHP=" + a.getHp() + ", DEF×" + String.format("%.2f", a.getDef()) + ").");
                     }
                 } else {
                     view.updateVerlauf("Hier gibt es keine nutzbare Truhe.");
                 }
                 break;
             case "2":
-                if (hatHaendler && !haendlerBesucht) {
-                    haendlerBesucht = true;
-                    int neu = model.getPlayer().getHp() + 30;
-                    model.getPlayer().setHp(neu);
-                    view.updateVerlauf("Der Händler verkauft dir einen Trank (+30 HP).");
+                if (hatHaendler) {
+                    Player p = model.getPlayer();
+                    if (p.getCoins() >= 1) {
+                        p.addCoins(-1);
+                        p.setHp(p.getHp() + 30); // wird in setHp auf maxHp begrenzt
+                        haendlerBesucht = true;
+                        view.updateVerlauf("Du kaufst einen Trank für 1 Münze (+30 HP). Verbleibende Münzen: " + p.getCoins());
+                    } else {
+                        view.updateVerlauf("Nicht genug Münzen. Ein Trank kostet 1 Münze.");
+                    }
                 } else {
-                    view.updateVerlauf("Hier ist kein Händler (mehr).");
+                    view.updateVerlauf("Hier ist kein Händler.");
                 }
                 break;
             case "e":
                 if (mitBett) {
-                    model.getPlayer().setHp(100);
-                    view.updateVerlauf("Du ruhst dich am Bett aus. HP auf 100 aufgefüllt.");
+                    model.getPlayer().setHp(model.getPlayer().getMaxHp()); // Bett heilt auf Max HP
+                    view.updateVerlauf("Du ruhst dich am Bett aus. HP vollständig aufgefüllt.");
                 } else {
                     view.updateVerlauf("Hier gibt es kein Bett.");
                 }

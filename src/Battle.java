@@ -20,6 +20,10 @@ public class Battle {
         return gegner.getName();
     }
 
+    public int getCoinReward() {
+        return gegner.getCoinsReward();
+    }
+
     public String processInput(String input) {
         StringBuilder sb = new StringBuilder();
         // Spieleraktion
