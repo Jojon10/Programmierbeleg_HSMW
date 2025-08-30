@@ -102,6 +102,7 @@ public class GameController {
             view.updateVisual("Kein Bereich.");
             return;
         }
+
         String typ = (b instanceof Raum) ? "Raum" : "Gang";
         String extras = "";
         if (b instanceof Raum) {
@@ -111,9 +112,16 @@ public class GameController {
                      (r.hatTruhe() ? " | Truhe" : "") +
                      (r.hatHaendler() ? " | Händler" : "");
         }
+
         if (b.getGegner() != null) {
-            extras += " | Gegner: " + b.getGegner().getName();
+            // NEU: während des Kampfes die HP des Gegners anzeigen
+            if (imKampf) {
+                extras += " | Gegner: " + b.getGegner().getName() + " (HP=" + b.getGegner().getHp() + ")";
+            } else {
+                extras += " | Gegner: " + b.getGegner().getName();
+            }
         }
+
         view.updateVisual(typ + extras);
     }
 }

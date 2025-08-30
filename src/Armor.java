@@ -1,12 +1,20 @@
 public class Armor extends Item {
-    private final int hp;
-    private final double def;
+    private final int maxHp;     // neue maximale HP
+    private final double def;    // Verteidigungs-Multiplikator
 
-    public Armor(String name, int hp, double def) {
+    public Armor(String name, int maxHp, double def) {
         super(name);
-        this.hp = hp;
+        this.maxHp = maxHp;
         this.def = def;
     }
-    public int getHp() { return hp; }
+
+    public int getMaxHp() { return maxHp; }
     public double getDef() { return def; }
+
+    @Override
+    public String applyTo(Player player) {
+        player.setMaxHp(maxHp);      // klemmt aktuelle HP automatisch ein
+        player.setDef(def);
+        return "Rüstung angelegt: " + name + " (maxHP=" + maxHp + ", DEF×" + String.format("%.2f", def) + ")";
+    }
 }

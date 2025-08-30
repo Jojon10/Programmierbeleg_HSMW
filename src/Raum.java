@@ -1,4 +1,6 @@
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Raum extends Bereich {
     private boolean truheGeoeffnet = false;
@@ -6,24 +8,47 @@ public class Raum extends Bereich {
     private final boolean mitBett;
     private boolean hatLeiter = false;
 
-    private boolean hatTruhe = false;
     private boolean hatHaendler = false;
+
+    // NEU: Vorab definierter Inhalt dieser einen Truhe in diesem Raum
+    private final List<Item> truhenLoot = new ArrayList<>();
 
     public Raum(boolean mitBett) {
         this.mitBett = mitBett;
     }
 
+    // ---- Truhen-API ----
+    /** Setzt den exakten Inhalt der Truhe (überschreibt vorherige Belegung). */
+    public void setTruheLoot(Item... items) {
+        truhenLoot.clear();
+        if (items != null) {
+            truhenLoot.addAll(Arrays.asList(items));
+        }
+        truheGeoeffnet = false; // neu befüllt -> wieder verschlossen
+    }
+
+    /** Fügt der Truhe ein weiteres Item hinzu. */
+    public void addTruheItem(Item item) {
+        if (item != null) {
+            truhenLoot.add(item);
+            truheGeoeffnet = false;
+        }
+    }
+
+    /** Ob die Truhe benutzbar ist (hat Inhalt und ist noch nicht geöffnet). */
+    public boolean hatTruhe() {
+        return !truheGeoeffnet && !truhenLoot.isEmpty();
+    }
+
+    // ---- Sonstige Raum-Optionen ----
     public void setLeiter(boolean wert) {
         this.hatLeiter = wert;
     }
-
-    public void setTruhe(boolean wert) { this.hatTruhe = wert; }
 
     public void setHaendler(boolean wert) { this.hatHaendler = wert; }
 
     public boolean hatBett() { return mitBett; }
     public boolean hatLeiter() { return hatLeiter; }
-    public boolean hatTruhe() { return hatTruhe && !truheGeoeffnet; }
     public boolean hatHaendler() { return hatHaendler; }
 
     @Override
@@ -32,8 +57,8 @@ public class Raum extends Bereich {
         input = input.trim().toLowerCase();
         if (nachbarn.containsKey(input)) return true;
         switch (input) {
-            case "1": return hatTruhe && !truheGeoeffnet;
-            case "2": return hatHaendler; // mehrfach kaufen erlaubt
+            case "1": return hatTruhe();
+            case "2": return hatHaendler; // mehrfach kaufen erlaubt (1 Münze pro Trank)
             case "e": return mitBett;
             case "x": return hatLeiter;
             default: return false;
@@ -46,7 +71,7 @@ public class Raum extends Bereich {
         if (!nachbarn.isEmpty()) {
             sb.append(String.join(", ", nachbarn.keySet()));
         }
-        if (hatTruhe && !truheGeoeffnet) {
+        if (hatTruhe()) {
             if (sb.length() > 0) sb.append(", ");
             sb.append("1 (Truhe)");
         }
@@ -76,36 +101,26 @@ public class Raum extends Bereich {
         }
 
         switch (input) {
-            case "1":
-                if (hatTruhe && !truheGeoeffnet) {
-                    truheGeoeffnet = true;
-                    Random r = new Random();
-                    if (r.nextBoolean()) {
-                        // Waffe
-                        Weapon w = new Weapon("Kurzschwert", 8, 1.20);
-                        model.getPlayer().setDmg((int)Math.round(w.getDmg()));
-                        model.getPlayer().setAtk(w.getAtk());
-                        view.updateVerlauf("Du öffnest die Truhe und findest eine Waffe: " + w.getName() +
-                                " (DMG=" + (int)w.getDmg() + ", ATK×" + String.format("%.2f", w.getAtk()) + ").");
-                    } else {
-                        // Rüstung → setzt Max HP & DEF
-                        Armor a = new Armor("Leder-Rüstung", 120, 1.20);
-                        model.getPlayer().setMaxHp(a.getHp());
-                        // aktuelle HP einklemmen (geschieht in setMaxHp)
-                        model.getPlayer().setDef(a.getDef());
-                        view.updateVerlauf("Du öffnest die Truhe und findest eine Rüstung: " + a.getName() +
-                                " (maxHP=" + a.getHp() + ", DEF×" + String.format("%.2f", a.getDef()) + ").");
+            case "1": // Truhe öffnen
+                if (hatTruhe()) {
+                    StringBuilder sb = new StringBuilder("Du öffnest die Truhe:\n");
+                    for (Item it : truhenLoot) {
+                        String info = it.applyTo(model.getPlayer());
+                        sb.append("- ").append(info).append("\n");
                     }
+                    truheGeoeffnet = true;     // ab jetzt dauerhaft leer
+                    view.updateVerlauf(sb.toString().trim());
                 } else {
                     view.updateVerlauf("Hier gibt es keine nutzbare Truhe.");
                 }
                 break;
-            case "2":
+
+            case "2": // Händler (Trank 1 Münze, +30 HP bis maxHp)
                 if (hatHaendler) {
                     Player p = model.getPlayer();
                     if (p.getCoins() >= 1) {
                         p.addCoins(-1);
-                        p.setHp(p.getHp() + 30); // wird in setHp auf maxHp begrenzt
+                        p.setHp(p.getHp() + 30);
                         haendlerBesucht = true;
                         view.updateVerlauf("Du kaufst einen Trank für 1 Münze (+30 HP). Verbleibende Münzen: " + p.getCoins());
                     } else {
@@ -115,15 +130,17 @@ public class Raum extends Bereich {
                     view.updateVerlauf("Hier ist kein Händler.");
                 }
                 break;
-            case "e":
+
+            case "e": // Bett
                 if (mitBett) {
-                    model.getPlayer().setHp(model.getPlayer().getMaxHp()); // Bett heilt auf Max HP
+                    model.getPlayer().setHp(model.getPlayer().getMaxHp());
                     view.updateVerlauf("Du ruhst dich am Bett aus. HP vollständig aufgefüllt.");
                 } else {
                     view.updateVerlauf("Hier gibt es kein Bett.");
                 }
                 break;
-            case "x":
+
+            case "x": // Leiter
                 if (hatLeiter) {
                     view.updateVerlauf("Du steigst die Leiter hinauf...");
                     model.naechsteEbene();
@@ -131,7 +148,8 @@ public class Raum extends Bereich {
                     view.updateVerlauf("Hier gibt es keine Leiter.");
                 }
                 break;
-            default:
+
+            default: // Bewegung
                 Bereich ziel = nachbarn.get(input);
                 if (ziel != null) {
                     model.setAktuellerBereich(ziel);
