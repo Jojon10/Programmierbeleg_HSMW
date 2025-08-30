@@ -30,8 +30,8 @@ public class Ebene {
         Raum raumB = new Raum(false);
         raumB.setHaendler(true);
         raumB.setTruheLoot(
-                new Weapon("Kurzschwert", 8, 1.20),
-                new Armor("Leder-Rüstung", 120, 1.15)
+                new Waffe("Kurzschwert", 8, 1.20),
+                new Ruestung("Leder-Rüstung", 120, 1.15)
         );
         raumB.setLeiter(true);
 
@@ -59,7 +59,7 @@ public class Ebene {
         Raum raumB = new Raum(false);
         raumB.setHaendler(true);
         raumB.setTruheLoot(
-                new Armor("Kettenhemd", 140, 1.30)
+                new Ruestung("Kettenhemd", 140, 1.30)
         );
 
         // In der zweiten Ebene sitzt der Gegner im Ziel-Raum (Belohnung: 5 Münzen)

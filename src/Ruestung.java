@@ -1,8 +1,8 @@
-public class Armor extends Item {
+public class Ruestung extends Item {
     private final int maxHp;     // neue maximale HP
     private final double def;    // Verteidigungs-Multiplikator
 
-    public Armor(String name, int maxHp, double def) {
+    public Ruestung(String name, int maxHp, double def) {
         super(name);
         this.maxHp = maxHp;
         this.def = def;
