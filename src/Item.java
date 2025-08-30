@@ -13,5 +13,5 @@ public abstract class Item {
      * Wendet die Item-Wirkung auf den Spieler an und liefert einen kurzen Beschreibungstext
      * (z. B. für den Verlauf im UI).
      */
-    public abstract String applyTo(Player player);
+    public abstract String applyTo(Spieler spieler);
 }

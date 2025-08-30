@@ -1,7 +1,7 @@
 public class GameController {
     private final Game model;
     private final GameView view;
-    private Battle battle;
+    private Kampflogik kampf;
     private boolean imKampf = false;
 
     public GameController(Game model, GameView view) {
@@ -24,10 +24,10 @@ public class GameController {
                 return;
             }
 
-            String bericht = battle.processInput(input);
+            String bericht = kampf.processInput(input);
             view.updateVerlauf(bericht);
 
-            if (battle.istKampfVorbei()) {
+            if (kampf.istKampfVorbei()) {
                 if (model.getPlayer().getHp() <= 0) {
                     // Tod zählen & Respawn am Bett
                     model.getPlayer().erhoeheTode();
@@ -35,9 +35,9 @@ public class GameController {
                     model.getPlayer().setHp(model.getPlayer().getMaxHp()); // Bett heilt auf Max HP
                     model.setAktuellerBereich(model.getAktuelleEbene().getStartBereich());
                 } else {
-                    int belohnung = battle.getMuenzenBelohnung();
+                    int belohnung = kampf.getMuenzenBelohnung();
                     model.getPlayer().addMuenzen(belohnung);
-                    view.updateVerlauf("Du hast " + battle.getGegnerName() + " besiegt und erhältst " + belohnung + " Münze(n).");
+                    view.updateVerlauf("Du hast " + kampf.getGegnerName() + " besiegt und erhältst " + belohnung + " Münze(n).");
                     // Gegner aus dem Bereich entfernen
                     if (model.getAktuellerBereich() != null) {
                         model.getAktuellerBereich().setGegner(null);
@@ -69,7 +69,7 @@ public class GameController {
         // Prüfen, ob am/im neuen Bereich ein Gegner wartet → Kampf starten
         Bereich aktueller = model.getAktuellerBereich();
         if (aktueller != null && aktueller.getGegner() != null) {
-            battle = new Battle(model.getPlayer(), aktueller.getGegner());
+            kampf = new Kampflogik(model.getPlayer(), aktueller.getGegner());
             imKampf = true;
             view.updateVerlauf("Ein Kampf beginnt mit: " + aktueller.getGegner().getName());
         }
@@ -80,7 +80,7 @@ public class GameController {
 
     public void updateAllowedInputs() {
         if (imKampf) {
-            view.updateAllowedInputs(battle.getErlaubteAktionen());
+            view.updateAllowedInputs(kampf.getErlaubteAktionen());
         } else {
             Bereich b = model.getAktuellerBereich();
             view.updateAllowedInputs(b != null ? b.getErlaubteEingaben() : "—");
@@ -88,13 +88,13 @@ public class GameController {
     }
 
     private void updateView() {
-        Player p = model.getPlayer();
-        String status = "HP=" + p.getHp() + "/" + p.getMaxHp()
-                + " | ATK=" + String.format("%.2f", p.getAtk())
-                + " | DEF=" + String.format("%.2f", p.getDef())
-                + " | DMG=" + p.getDmg()
-                + " | Münzen=" + p.getMuenzen()
-                + " | Tode=" + p.getTode();
+        Spieler s = model.getPlayer();
+        String status = "HP=" + s.getHp() + "/" + s.getMaxHp()
+                + " | ATK=" + String.format("%.2f", s.getAtk())
+                + " | DEF=" + String.format("%.2f", s.getDef())
+                + " | DMG=" + s.getDmg()
+                + " | Münzen=" + s.getMuenzen()
+                + " | Tode=" + s.getTode();
         view.updateStatus(status);
 
         Bereich b = model.getAktuellerBereich();

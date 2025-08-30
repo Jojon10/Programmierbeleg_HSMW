@@ -1,4 +1,4 @@
-public class Player {
+public class Spieler {
     private int maxHp = 100;
     private int hp = 100;
     private double atk = 1.0;

@@ -17,9 +17,9 @@ public class Weapon extends Item {
     }
 
     @Override
-    public String applyTo(Player player) {
-        player.setDmg(dmg);
-        player.setAtk(atk);
+    public String applyTo(Spieler spieler) {
+        spieler.setDmg(dmg);
+        spieler.setAtk(atk);
         return "Waffe angelegt: " + name + " (DMG=" + dmg + ", ATK=" + String.format("%.2f", atk) + ")";
     }
 }

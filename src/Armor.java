@@ -17,9 +17,9 @@ public class Armor extends Item {
     }
 
     @Override
-    public String applyTo(Player player) {
-        player.setMaxHp(maxHp);
-        player.setDef(def);
-        return "Rüstung angelegt: " + name + " (maxHP=" + maxHp + ", DEF×" + String.format("%.2f", def) + ")";
+    public String applyTo(Spieler spieler) {
+        spieler.setMaxHp(maxHp);
+        spieler.setDef(def);
+        return "Rüstung angelegt: " + name + " (maxHP=" + maxHp + ", DEF=" + String.format("%.2f", def) + ")";
     }
 }

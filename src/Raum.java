@@ -124,12 +124,12 @@ public class Raum extends Bereich {
 
             case "2": // Händler (Trank 1 Münze, +30 HP bis maxHp)
                 if (hatHaendler) {
-                    Player p = model.getPlayer();
-                    if (p.getMuenzen() >= 1) {
-                        p.addMuenzen(-1);
-                        p.setHp(p.getHp() + 30); // wird in setHp auf maxHp begrenzt
+                    Spieler spieler = model.getPlayer();
+                    if (spieler.getMuenzen() >= 1) {
+                        spieler.addMuenzen(-1);
+                        spieler.setHp(spieler.getHp() + 30); // wird in setHp auf maxHp begrenzt
                         haendlerBesucht = true;
-                        view.updateVerlauf("Du kaufst einen Trank für 1 Münze (+30 HP). Verbleibende Münzen: " + p.getMuenzen());
+                        view.updateVerlauf("Du kaufst einen Trank für 1 Münze (+30 HP). Verbleibende Münzen: " + spieler.getMuenzen());
                     } else {
                         view.updateVerlauf("Nicht genug Münzen. Ein Trank kostet 1 Münze.");
                     }

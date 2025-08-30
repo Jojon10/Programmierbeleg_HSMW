@@ -2,13 +2,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Game {
-    private Player player;
+    private Spieler spieler;
     private List<Ebene> ebenen;
     private int aktuelleEbeneIndex;
     private Bereich aktuellerBereich;
 
     public Game() {
-        this.player = new Player();
+        this.spieler = new Spieler();
         this.ebenen = new ArrayList<>();
         this.aktuelleEbeneIndex = 0;
 
@@ -20,8 +20,8 @@ public class Game {
         this.aktuellerBereich = ebenen.get(aktuelleEbeneIndex).getStartBereich();
     }
 
-    public Player getPlayer() {
-        return player;
+    public Spieler getPlayer() {
+        return spieler;
     }
 
     public Bereich getAktuellerBereich() {

@@ -1,14 +1,14 @@
 import java.util.Random;
 
-public class Battle {
-    private final Player player;
+public class Kampflogik {
+    private final Spieler spieler;
     private final Gegner gegner;
     private boolean spielerBlockt = false;
     private boolean gegnerBlockt = false;
     private final Random random = new Random();
 
-    public Battle(Player player, Gegner gegner) {
-        this.player = player;
+    public Kampflogik(Spieler spieler, Gegner gegner) {
+        this.spieler = spieler;
         this.gegner = gegner;
     }
 
@@ -30,7 +30,7 @@ public class Battle {
         // Spieleraktion
         if ("1".equals(input)) {
             spielerBlockt = false;
-            int dmg = berechneSchaden(player.getDmg(), player.getAtk(), gegner.getDef(), gegnerBlockt);
+            int dmg = berechneSchaden(spieler.getDmg(), spieler.getAtk(), gegner.getDef(), gegnerBlockt);
             gegner.setHp(gegner.getHp() - dmg);
             sb.append("Du greifst an und verursachst ").append(dmg).append(" Schaden. ");
         } else if ("2".equals(input)) {
@@ -47,8 +47,8 @@ public class Battle {
             if (enemyBlocks) {
                 sb.append(gegner.getName()).append(" blockt. ");
             } else {
-                int edmg = berechneSchaden(gegner.getDmg(), gegner.getAtk(), player.getDef(), spielerBlockt);
-                player.setHp(player.getHp() - edmg);
+                int edmg = berechneSchaden(gegner.getDmg(), gegner.getAtk(), spieler.getDef(), spielerBlockt);
+                spieler.setHp(spieler.getHp() - edmg);
                 sb.append(gegner.getName()).append(" greift an und verursacht ").append(edmg).append(" Schaden. ");
             }
         }
@@ -56,7 +56,7 @@ public class Battle {
         if (gegner.getHp() <= 0) {
             sb.append("Der Gegner ist besiegt!");
         }
-        if (player.getHp() <= 0) {
+        if (spieler.getHp() <= 0) {
             sb.append("Du wurdest besiegt!");
         }
 
@@ -64,7 +64,7 @@ public class Battle {
     }
 
     public boolean istKampfVorbei() {
-        return player.getHp() <= 0 || gegner.getHp() <= 0;
+        return spieler.getHp() <= 0 || gegner.getHp() <= 0;
     }
 
     private int berechneSchaden(int basisSchaden, double ang, double ver, boolean verteidigerBlockt) {
