@@ -66,7 +66,6 @@ public class Raum extends Bereich {
         switch (input) {
             case "1": return hatTruhe();
             case "2": return hatHaendler; // mehrfach kaufen erlaubt (1 Münze pro Trank)
-            case "e": return mitBett;
             case "x": return hatLeiter;
             default:  return false;
         }
@@ -85,10 +84,6 @@ public class Raum extends Bereich {
         if (hatHaendler) {
             if (sb.length() > 0) sb.append(", ");
             sb.append("2 (Händler: Trank 1 Münze)");
-        }
-        if (mitBett) {
-            if (sb.length() > 0) sb.append(", ");
-            sb.append("e (Bett)");
         }
         if (hatLeiter) {
             if (sb.length() > 0) sb.append(", ");
@@ -112,7 +107,7 @@ public class Raum extends Bereich {
                 if (hatTruhe()) {
                     StringBuilder sb = new StringBuilder("Du öffnest die Truhe:\n");
                     for (Item it : truhenLoot) {
-                        String info = it.applyTo(model.getPlayer());
+                        String info = it.applyTo(model.getSpieler());
                         sb.append("- ").append(info).append("\n");
                     }
                     truheGeoeffnet = true; // ab jetzt dauerhaft leer
@@ -124,12 +119,12 @@ public class Raum extends Bereich {
 
             case "2": // Händler (Trank 1 Münze, +30 HP bis maxHp)
                 if (hatHaendler) {
-                    Spieler spieler = model.getPlayer();
-                    if (spieler.getMuenzen() >= 1) {
-                        spieler.addMuenzen(-1);
-                        spieler.setHp(spieler.getHp() + 30); // wird in setHp auf maxHp begrenzt
+                    Spieler s = model.getSpieler();
+                    if (s.getMuenzen() >= 1) {
+                        s.addMuenzen(-1);
+                        s.setHp(s.getHp() + 30); // wird in setHp auf maxHp begrenzt
                         haendlerBesucht = true;
-                        view.updateVerlauf("Du kaufst einen Trank für 1 Münze (+30 HP). Verbleibende Münzen: " + spieler.getMuenzen());
+                        view.updateVerlauf("Du kaufst einen Trank für 1 Münze (+30 HP). Verbleibende Münzen: " + s.getMuenzen());
                     } else {
                         view.updateVerlauf("Nicht genug Münzen. Ein Trank kostet 1 Münze.");
                     }
@@ -138,15 +133,7 @@ public class Raum extends Bereich {
                 }
                 break;
 
-            case "e": // Bett
-                if (mitBett) {
-                    model.getPlayer().setHp(model.getPlayer().getMaxHp());
-                    view.updateVerlauf("Du ruhst dich am Bett aus. HP vollständig aufgefüllt.");
-                } else {
-                    view.updateVerlauf("Hier gibt es kein Bett.");
-                }
-                break;
-
+            // "e" (Bett) entfällt – Reset ist global über "r" im Controller
             case "x": // Leiter
                 if (hatLeiter) {
                     view.updateVerlauf("Du steigst die Leiter hinauf...");

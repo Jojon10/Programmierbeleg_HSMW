@@ -31,7 +31,7 @@ public class GameView {
         verlaufArea.setPrefRowCount(15);
 
         inputField = new TextField();
-        inputField.setPromptText("Eingabe (w/a/s/d, 1=Truhe, 2=Händler [1 Münze], e=Bett, x=Leiter).");
+        inputField.setPromptText("Eingabe (w/a/s/d, 1=Truhe, 2=Händler [1 Münze], x=Leiter, r=Reset).");
         inputField.setOnAction(e -> {
             String text = inputField.getText();
             if (controller != null && text != null && !text.isBlank()) {

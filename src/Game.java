@@ -20,7 +20,7 @@ public class Game {
         this.aktuellerBereich = ebenen.get(aktuelleEbeneIndex).getStartBereich();
     }
 
-    public Spieler getPlayer() {
+    public Spieler getSpieler() {
         return spieler;
     }
 

@@ -16,10 +16,16 @@ public class GameController {
         input = input.trim().toLowerCase();
         if (input.isEmpty()) return;
 
+        // Globaler Reset (auch im Kampf erlaubt)
+        if ("r".equals(input)) {
+            handleReset();
+            return;
+        }
+
         if (imKampf) {
-            // Nur Kampfaktionen zulassen
+            // Nur Kampfaktionen zulassen (plus r schon oben abgefangen)
             if (!input.equals("1") && !input.equals("2")) {
-                view.updateVerlauf("Im Kampf sind nur die Aktionen 1 (Angriff) und 2 (Block) erlaubt.");
+                view.updateVerlauf("Im Kampf sind nur die Aktionen 1 (Angriff) und 2 (Block) erlaubt. (Oder r = Reset)");
                 updateAllowedInputs();
                 return;
             }
@@ -28,15 +34,15 @@ public class GameController {
             view.updateVerlauf(bericht);
 
             if (kampf.istKampfVorbei()) {
-                if (model.getPlayer().getHp() <= 0) {
+                if (model.getSpieler().getHp() <= 0) {
                     // Tod zählen & Respawn am Bett
-                    model.getPlayer().erhoeheTode();
+                    model.getSpieler().erhoeheTode();
                     view.updateVerlauf("Du bist ohnmächtig geworden und erwachst wieder am Bett...");
-                    model.getPlayer().setHp(model.getPlayer().getMaxHp()); // Bett heilt auf Max HP
+                    model.getSpieler().setHp(model.getSpieler().getMaxHp()); // Bett heilt auf Max HP
                     model.setAktuellerBereich(model.getAktuelleEbene().getStartBereich());
                 } else {
                     int belohnung = kampf.getMuenzenBelohnung();
-                    model.getPlayer().addMuenzen(belohnung);
+                    model.getSpieler().addMuenzen(belohnung);
                     view.updateVerlauf("Du hast " + kampf.getGegnerName() + " besiegt und erhältst " + belohnung + " Münze(n).");
                     // Gegner aus dem Bereich entfernen
                     if (model.getAktuellerBereich() != null) {
@@ -69,7 +75,7 @@ public class GameController {
         // Prüfen, ob am/im neuen Bereich ein Gegner wartet → Kampf starten
         Bereich aktueller = model.getAktuellerBereich();
         if (aktueller != null && aktueller.getGegner() != null) {
-            kampf = new Kampflogik(model.getPlayer(), aktueller.getGegner());
+            kampf = new Kampflogik(model.getSpieler(), aktueller.getGegner());
             imKampf = true;
             view.updateVerlauf("Ein Kampf beginnt mit: " + aktueller.getGegner().getName());
         }
@@ -78,23 +84,41 @@ public class GameController {
         updateView();
     }
 
+    private void handleReset() {
+        // Todeszähler + Respawn am Start mit vollen HP
+        model.getSpieler().erhoeheTode();
+        model.getSpieler().setHp(model.getSpieler().getMaxHp());
+        model.setAktuellerBereich(model.getAktuelleEbene().getStartBereich());
+        imKampf = false; // Kampf (falls aktiv) verlassen
+        view.updateVerlauf("Reset: Du respawnst am Bett mit vollen HP. (Tode +1)");
+        updateAllowedInputs();
+        updateView();
+    }
+
     public void updateAllowedInputs() {
+        String allowed;
         if (imKampf) {
-            view.updateAllowedInputs(kampf.getErlaubteAktionen());
+            allowed = kampf.getErlaubteAktionen();
         } else {
             Bereich b = model.getAktuellerBereich();
-            view.updateAllowedInputs(b != null ? b.getErlaubteEingaben() : "—");
+            allowed = (b != null ? b.getErlaubteEingaben() : "—");
         }
+        if (allowed == null || allowed.isBlank()) {
+            allowed = "r (Reset)";
+        } else {
+            allowed = allowed + ", r (Reset)";
+        }
+        view.updateAllowedInputs(allowed);
     }
 
     private void updateView() {
-        Spieler s = model.getPlayer();
-        String status = "HP=" + s.getHp() + "/" + s.getMaxHp()
-                + " | ATK=" + String.format("%.2f", s.getAtk())
-                + " | DEF=" + String.format("%.2f", s.getDef())
-                + " | DMG=" + s.getDmg()
-                + " | Münzen=" + s.getMuenzen()
-                + " | Tode=" + s.getTode();
+        Spieler p = model.getSpieler();
+        String status = "HP=" + p.getHp() + "/" + p.getMaxHp()
+                + " | ATK×" + String.format("%.2f", p.getAtk())
+                + " | DEF×" + String.format("%.2f", p.getDef())
+                + " | DMG=" + p.getDmg()
+                + " | Münzen=" + p.getMuenzen()
+                + " | Tode=" + p.getTode();
         view.updateStatus(status);
 
         Bereich b = model.getAktuellerBereich();
